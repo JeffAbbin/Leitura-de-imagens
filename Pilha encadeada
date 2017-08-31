@@ -1,0 +1,143 @@
+#define TAM 4
+#define FIM TAM-1
+#define INICIO 0
+
+#define OVERFLOW 1
+#define UNDERFLOW 2
+#define OK 3
+
+#include <conio.h>
+#include <stdlib.h>
+#include <stdio.h>
+typedef struct Pixel {
+	unsigned char p; //0 é fundo, 1 é pixel
+	unsigned char v; //1 já foi visitado
+}tPixel;
+typedef struct Pos {
+	int x;
+	int y;
+	struct Pos *ant;
+}tPos;
+typedef struct Pilha { //salva os pixels na pilha e a posição do topo
+	int quant; // quantas posições existem na pilha
+	struct Pos *top;
+}tPilha;
+
+struct Pilha *criaPilha(int *resultado);
+void push(int x, int y, struct Pilha *pilha, int *resultado);
+void pop(struct Pilha *pilha, struct Pos *p, int *resultado);
+void MostraPilha(struct Pilha *pilha);
+
+int main()
+{
+	char op;
+	int sair = 0;
+	int res = 3;
+
+	struct Pilha p1;
+	p1.quant = 0;
+	p1.top = NULL;
+	struct Pilha *p2;
+	p2 = &p1;
+
+	tPilha *pilha = p2;
+	tPos *pos;
+
+
+	push(20, 20, pilha, &res);
+	push(2545, 0, pilha, &res);
+
+
+
+	push(5, 20, pilha, &res);
+	push(2545, 555, pilha, &res);
+	push(588, 20, pilha, &res);
+	push(2545, 555, pilha, &res);
+	push(20, 2045, pilha, &res);
+	push(25655, 0, pilha, &res);
+	push(52, 208, pilha, &res);
+	push(2545, 555, pilha, &res);
+
+	pop(pilha, pilha->top, &res);
+
+	
+	pop(pilha, pilha->top, &res);
+	MostraPilha(pilha);
+
+	return 0;
+}
+
+void push(int x, int y, struct Pilha *pilha, int *resultado) {
+	struct Pos *p = (struct Pos *)malloc(sizeof(struct Pos));
+	if (p == NULL) *resultado = 0;
+	else {
+		p->x = x;
+		p->y = y;
+		if (pilha->top == NULL) {
+			p->ant = NULL;
+			pilha->top = p;
+		}
+		else {
+			p->ant = pilha->top;
+			pilha->top = p;
+		}
+		pilha->quant++;
+		*resultado = OK;
+	}
+}
+void pop(struct Pilha *pilha, struct Pos *p, int *resultado) {
+	struct Pos *aux;
+	if (pilha->top == NULL) {
+		*resultado = UNDERFLOW;
+	}
+	else {
+		aux = pilha->top;
+		p->x = aux->x;
+		p->y = aux->y;
+		pilha->top = aux->ant;
+		pilha->quant--;
+		free(aux);
+	}
+}
+
+
+struct Pilha *criaPilha(int *resultado) {
+	struct Pilha p1;
+	if (*resultado == OK) {
+		p1.quant = 0;
+		p1.top = NULL;
+		struct Pilha *p2;
+		p2 = &p1;
+		return p2;
+	}
+	else {
+		printf("erro na criaçao da pilha\n");
+		system("pause");
+
+	}
+
+}
+
+
+void MostraPilha(struct Pilha *pilha) {
+
+	printf("tem %d posisoes\n", pilha->quant);
+	if (pilha->top == NULL) {
+		printf("pilha vazia\n");
+	}
+	if (pilha->top != NULL) {
+		if (pilha->top->ant == NULL) {
+			printf("possicao é: %d e %d\n", pilha->top->x, pilha->top->y);
+		}
+		else {
+			for (int i = 0; i < pilha->quant; i++) {
+
+				printf("possicao é: %d e %d\n", pilha->top->x, pilha->top->y);
+
+				pilha->top = pilha->top->ant;
+
+
+			}
+		}
+	}
+}
