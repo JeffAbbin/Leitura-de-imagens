@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define FUNDO 0
+#define IMAGEM 1
+
+int main() {
+
+	FILE *arquivo;
+	int colunas, linhas;
+	int i=0, j=0, a;
+	char c[4], l[4];
+
+	if ((arquivo = fopen("C:\\Users\\abbin\\Documents\\engenharia\\programaçao\\reconhecer objetos\\imagens\\03.ppm", "r")) == NULL) {  //Faz o teste inicial da abertura do arquivo
+		// LEMBRA!! de sempre mudar o diretorio
+		printf("Erro ao abrir o arquivo!");
+		return 0;
+	}
+	else {
+		printf("Arquivo aberto com sucesso!\n");
+	}
+	
+	
+	
+	for (i=0; i < 2; i++) {// le do arquivo colunas
+		fgets(c, 4, arquivo);
+	}
+	printf("%s\n", c);
+	
+		fgets(l, 4, arquivo);// le as linhas do arquivo
+	
+	printf("%s\n", l);
+
+	colunas = atoi(c);
+	printf("%d\n", colunas);
+	linhas = atoi(l);
+	printf("%d\n", linhas);
+
+
+
+
+	fclose(arquivo);
+}
