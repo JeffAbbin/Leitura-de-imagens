@@ -52,7 +52,7 @@ int main() {
 
 	img = (struct pixel**) calloc(linhas, sizeof(struct pixel*)); //supostamente aloca a matriz igualando a zero e ao tamanho d número de linhas e colunas
 	for(k=0; k < linhas; k++){
-			img[k] = calloc(colunas, sizeof(struct pixel));	
+			img[k] = calloc(colunas, sizeof(struct pixel));	//verificar o que está acontecendo, não funciona
 	}
 	
 	for(i = 0; i<linhas; i++){
