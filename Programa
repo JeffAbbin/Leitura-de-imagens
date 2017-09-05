@@ -48,8 +48,13 @@ int main()
 		exit(0);
 	}    
 	
-	/*Precisamos colocar aquele teste que diz se é um qrquivo ppm ou não que está no outro arquivo*/
-
+	fscanf(fp, "%s", chave); //chave é o char com 3 posições que será comparado
+	if (strcmp(chave, "P6") !=0){    //strcmp faz a comparação de duas strings, a que o programa lê no arquivo e uma "P6"
+		printf("Arquivo não é PPM\n");    //irá ler os dois primeiros carcteres e verificará se é P6, se sim, é um arquivo PPM
+		fclose(fp);
+		return 0;
+	}
+	
 	c = getc(fp);
 	while (c == '$')
 	{
