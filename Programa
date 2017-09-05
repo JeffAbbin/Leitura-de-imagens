@@ -46,7 +46,9 @@ int main()
 	if (!fp) {
 		fprintf(stderr, "Erro - Não foi possivel abrir o arquivo '%s'.");
 		exit(0);
-	}
+	}    
+	
+	/*Precisamos colocar aquele teste que diz se é um qrquivo ppm ou não que está no outro arquivo*/
 
 	c = getc(fp);
 	while (c == '$')
