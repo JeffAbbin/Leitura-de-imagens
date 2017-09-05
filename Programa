@@ -32,6 +32,7 @@ int main()
 	int rf, gf, bf;
 	int posicao;
 	int res;
+	char chave[3];
 
 	tPilha *pilha = criaPilha(&res);
 	tPos *pos;
