@@ -60,6 +60,10 @@ int main() {
 			fscanf(arquivo, "%c%c%c", &img[i][j].r, &img[i][j].g, &img[i][j].b);
 		}
 	}
+	
+	fr = img[0][0].r;
+	fg = img[0][0].g;
+	fb = img[0][0].b;
 
 
 	fclose(arquivo);
