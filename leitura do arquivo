@@ -1,42 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <conio.h>
+#include <string.h>
 #define FUNDO 0
 #define IMAGEM 1
 
 int main() {
+	
+	struct pixel{
+		char r,g,b;
+	};
 
 	FILE *arquivo;
-	int colunas, linhas;
+	int colunas, linhas, max;
+	char chave[3];
 	int i=0, j=0, a;
+	int k, h, nlinhas, ncolunas;
 	char c[4], l[4];
+	struct pixel **img;
 
-	if ((arquivo = fopen("C:\\Users\\abbin\\Documents\\engenharia\\programaçao\\reconhecer objetos\\imagens\\03.ppm", "r")) == NULL) {  //Faz o teste inicial da abertura do arquivo
-		// LEMBRA!! de sempre mudar o diretorio
+	if ((arquivo = fopen("01.ppm", "r")) == NULL) {  //Faz o teste inicial da abertura do arquivo
+		// LEMBRAR!! de sempre mudar o diretorio
 		printf("Erro ao abrir o arquivo!");
 		return 0;
 	}
 	else {
 		printf("Arquivo aberto com sucesso!\n");
 	}
+		
+	fscanf(arquivo, "%s", chave); //chave é o char com 3 posições que será comparado
+	if (strcmp(chave, "P6") !=0){ //strcmp faz a comparação de duas strings, a que o programa lê no arquivo e uma "P6"
+		printf("Arquivo não é PPM\n"); //irá ler os dois primeiros carcteres e verificará se é P6, se sim, é um arquivo PPM
+		fclose(arquivo);
+		return 0;
+	}
 	
 	
-	
-	for (i=0; i < 2; i++) {// le do arquivo colunas
+	for (i=0; i < 2; i++) {    // le do arquivo colunas
 		fgets(c, 4, arquivo);
 	}
-	printf("%s\n", c);
-	
-		fgets(l, 4, arquivo);// le as linhas do arquivo
+	printf("%s\n", c);	
+		fgets(l, 4, arquivo);   // le as linhas do arquivo
+	fscanf(arquivo, "%d", &max);
+
 	
 	printf("%s\n", l);
-
 	colunas = atoi(c);
 	printf("%d\n", colunas);
 	linhas = atoi(l);
 	printf("%d\n", linhas);
 
-
+	nlinhas = linhas;
+	ncolunas = colunas;
+	img = (struct pixel**) calloc(nlinhas, sizeof(struct pixel*)); //supostamente aloca a matriz igualando a zero e ao tamanho d número de linhas e colunas
+	for(k=0; k < nlinhas; k++){
+			img[k] = calloc(ncolunas, sizeof(struct pixel));	
+	}
 
 
 	fclose(arquivo);
