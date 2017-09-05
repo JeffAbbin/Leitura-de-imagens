@@ -15,7 +15,7 @@ int main() {
 	int colunas, linhas, max;
 	char chave[3];
 	int i=0, j=0, a;
-	int k, h, nlinhas, ncolunas;
+	int k, h;
 	char c[4], l[4];
 	struct pixel **img;
 
@@ -50,11 +50,15 @@ int main() {
 	linhas = atoi(l);
 	printf("%d\n", linhas);
 
-	nlinhas = linhas;
-	ncolunas = colunas;
-	img = (struct pixel**) calloc(nlinhas, sizeof(struct pixel*)); //supostamente aloca a matriz igualando a zero e ao tamanho d número de linhas e colunas
-	for(k=0; k < nlinhas; k++){
-			img[k] = calloc(ncolunas, sizeof(struct pixel));	
+	img = (struct pixel**) calloc(linhas, sizeof(struct pixel*)); //supostamente aloca a matriz igualando a zero e ao tamanho d número de linhas e colunas
+	for(k=0; k < linhas; k++){
+			img[k] = calloc(colunas, sizeof(struct pixel));	
+	}
+	
+	for(i = 0; i<linhas; i++){
+		for(j = 0; j<colunas; j++){
+			fscanf(arquivo, "%c%c%c", &img[i][j].r, &img[i][j].g, &img[i][j].b);
+		}
 	}
 
 
