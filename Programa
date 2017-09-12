@@ -30,7 +30,7 @@ int main()
 	int linhas, colunas, maximo;
 	int rf, gf, bf;
 	int posicao;
-	int res, cont, pos;
+	int res = 3, cont;
 	int c, r, g, b;
 	char chave[3];
 
@@ -42,7 +42,7 @@ int main()
 
 	//ARQUIVO
 	FILE *fp;
-	char arq[] = "C:\\Imagens\\02.ppm";
+	char arq[] = "C:\\Users\\abbin\\Documents\\engenharia\\programaçao\\reconhecer objetos\\imagens\\01.ppm";
 	fp = fopen(arq, "rb");
 	if (!fp) {
 		fprintf(stderr, "Erro - Não foi possivel abrir o arquivo '%s'.");
@@ -87,15 +87,14 @@ int main()
 			}
 		} printf("\n");
 	}
-	fclose(fp); // fecha o arquivo
-
+	
 	for (i = 0; i < linhas; i++) {
 		for (j = 0; j < colunas; j++) {
 			if ((img[i][j].p == 1) && (img[i][j].v == 0)) {
 				verificaAdjacentes(img, i, j, linhas, colunas, pilha);
 				while (pilha->quant > 0) {
-					pop(pilha, pos, &res);
-					verificaAdjacentes(img, pos.x, pos.y, linhas, colunas, pilha);
+					pop(pilha, pilha->top, &res);
+					verificaAdjacentes(img, pos->x, pos->y, linhas, colunas, pilha);
 				}
 				cont++;
 			}
@@ -105,61 +104,80 @@ int main()
 	printf("%d \n", c);
 	printf("\n @@@@@@@@@ A imagem possui %d objetos @@@@@@@@@", cont);
 
-}
-	void push(int x, int y, struct Pilha *pilha, int *res) {
-		struct Pos *p = (struct Pos *)malloc(sizeof(struct Pos));
-		if (p == NULL) *res = 0;
-		else {
-			p->x = x;
-			p->y = y;
-			if (pilha->top == NULL) {
-				p->ant = NULL;
-				pilha->top = p;
-			}
-			else {
-				p->ant = pilha->top;
-				pilha->top = p;
-			}
-			pilha->quant++;
-			*res = OK;
-		}
-	}
-	void pop(struct Pilha *pilha, struct Pos *p, int *res) {
-		struct Pos *aux;
-		if (pilha->top == NULL) {
-			*res = UNDERFLOW;
-		}
-		else {
-			aux = pilha->top;
-			p->x = aux->x;
-			p->y = aux->y;
-			pilha->top = aux->ant;
-			pilha->quant++;
-			free(aux);
-		}
-	}
-	void verificaAdjacentes(struct Pixel **img, int i, int j, int linhas, int colunas, struct Pilha *pilha) {
-		int res;
-		img[i][j].v = 1;
+	fclose(fp); // fecha o arquivo
 
-		if (j > 0)
-			if ((img[i][j - 1].p == 1) && (img[i][j - 1].v == 0)) {
-				push(i, j - 1, pilha, &res);
-				img[i][j - 1].v == 1;
-			}
-		if (i > 0)
-			if ((img[i - 1][j].p == 1) && (img[i - 1][j].v == 0)) {
-				push(i - 1, j, pilha, &res);
-				img[i - 1][j].v == 1;
-			}
-		if (i < linhas - 1)
-			if ((img[i + 1][j].p == 1) && (img[i + 1][j].v == 0)) {
-				push(i + 1, j, pilha, &res);
-				img[i + 1][j].v == 1;
-			}
-		if (j < colunas - 1)
-			if ((img[i][j + 1].p == 1) && (img[i][j + 1].v == 0)) {
-				push(i, j + 1, pilha, &res);
-				img[i][j + 1].v == 1;
-			}
+}
+void push(int x, int y, struct Pilha *pilha, int *res) {
+	struct Pos *p = (struct Pos *)malloc(sizeof(struct Pos));
+	if (p == NULL) *res = 0;
+	else {
+		p->x = x;
+		p->y = y;
+		if (pilha->top == NULL) {
+			p->ant = NULL;
+			pilha->top = p;
+		}
+		else {
+			p->ant = pilha->top;
+			pilha->top = p;
+		}
+		pilha->quant++;
+		*res = OK;
 	}
+}
+void pop(struct Pilha *pilha, struct Pos *p, int *res) {
+	struct Pos *aux;
+	if (pilha->top == NULL) {
+		*res = UNDERFLOW;
+	}
+	else {
+		aux = pilha->top;
+		p->x = aux->x;
+		p->y = aux->y;
+		pilha->top = aux->ant;
+		pilha->quant++;
+		free(aux);
+	}
+}
+void verificaAdjacentes(struct Pixel **img, int i, int j, int linhas, int colunas, struct Pilha *pilha) {
+	int res;
+	img[i][j].v = 1;
+
+	if (j > 0)
+		if ((img[i][j - 1].p == 1) && (img[i][j - 1].v == 0)) {
+			push(i, j - 1, pilha, &res);
+			img[i][j - 1].v == 1;
+		}
+	if (i > 0)
+		if ((img[i - 1][j].p == 1) && (img[i - 1][j].v == 0)) {
+			push(i - 1, j, pilha, &res);
+			img[i - 1][j].v == 1;
+		}
+	if (i < linhas - 1)
+		if ((img[i + 1][j].p == 1) && (img[i + 1][j].v == 0)) {
+			push(i + 1, j, pilha, &res);
+			img[i + 1][j].v == 1;
+		}
+	if (j < colunas - 1)
+		if ((img[i][j + 1].p == 1) && (img[i][j + 1].v == 0)) {
+			push(i, j + 1, pilha, &res);
+			img[i][j + 1].v == 1;
+		}
+}
+
+struct Pilha *criaPilha(int *resultado) {
+	struct Pilha p1;
+	if (*resultado == OK) {
+		p1.quant = 0;
+		p1.top = NULL;
+		struct Pilha *p2;
+		p2 = &p1;
+		return p2;
+	}
+	else {
+		printf("erro na criaçao da pilha\n");
+		system("pause");
+
+	}
+
+}
