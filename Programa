@@ -7,6 +7,9 @@
 #include <conio.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+
+
 typedef struct Pixel {
 	unsigned char p; //0 é fundo, 1 é pixel
 	unsigned char v; //1 já foi visitado
@@ -21,6 +24,10 @@ typedef struct Pilha { //salva os pixels na pilha e a posição do topo
 	struct Pos *top;
 }tPilha;
 
+typedef struct pixelCor{
+	int r, g, b;
+};
+
 struct Pilha *criaPilha(int *resultado);
 void push(int x, int y, struct Pilha *pilha, int *resultado);
 void pop(struct Pilha *pilha, struct Pos *p, int *resultado);
@@ -33,12 +40,49 @@ int main()
 	int posicao;
 	int res;
 	char chave[3];
+	int cont = 0;
+	char c;
 
 	tPilha *pilha = criaPilha(&res);
 	tPos *pos;
 	tPixel **img;
 
 	int i, j;
+	
+	void analisa(struct pixel **img, int i, int j, int n, int m, struct sPilha *pilha){
+	
+	int resultado;
+	unsigned fr =img[0][0].r;
+	unsigned fg =img[0][0].g;
+	unsigned fb =img[0][0].b;
+	if(j>0){
+		if(((img[i][j-1].r != fr) || (img[i][j-1].g != fg) || (img[i][j-1].b != fb)) && (img[i][j-1].v != 1)){
+				img[i][j-1].v = 1;
+				push(i, j-1, pilha, &resultado);
+		} 
+	}
+	
+	if(i>0){
+		if(((img[i-1][j].r != fr) || (img[i-1][j].g != fg) || (img[i-1][j].b != fb)) && (img[i-1][j].v != 1)){
+				img[i-1][j].v = 1;
+				push(i-1, j, pilha, &resultado);
+		} 
+	}
+	
+	if(j>m-1){
+		if(((img[i][j+1].r != fr) || (img[i][j+1].g != fg) || (img[i][j+1].b != fb)) && (img[i][j+1].v != 1)){
+				img[i][j+1].v = 1;
+				push(i, j+1, pilha, &resultado);
+		} 
+	}
+	
+	if(i>n-1){
+		if(((img[i+1][j].r != fr) || (img[i+1][j].g != fg) || (img[i+1][j].b != fb)) && (img[i+1][j].v != 1)){
+				img[i+1][j].v = 1;
+				push(i+1, j, pilha, &resultado);
+		} 
+	}
+}
 
 	//ARQUIVO
 	FILE *fp;
@@ -84,8 +128,8 @@ int main()
 	fseek(fp, posicao, SEEK_SET);		//fseek para reposicionar
 	for (i = 0; i < linhas; i++) {
 		for (j = 0; j < colunas; j++) {
-			fscanf(fp, "%c%c%c", &r, &g, &b);
-			if ((r != rf) || (g != gf) || (b != bf)) {
+			fscanf(fp, "%c%c%c", &pixelCor.r, &pixelCor.g, &pixelCor.b);  //ver o que está acontecendo aqui, pois as variáveis deveriam ser a da struct que eu criei 
+			if ((pixelCor.r != rf) || (pixelCor.g != gf) || (pixelCor.b != bf)) {
 				img[i][j].p = 1;
 				if (j < 200)printf(" "); // onde a cor pixel é diferente fica em branco
 			}
@@ -94,7 +138,19 @@ int main()
 			}
 		} printf("\n");
 	}
+	
+	
+	while(pilha->quant>0){  //enquanto a qunatidade de elementos na pilha n for igual a zero, ele continuará dando pop
+		pop(pilha, &pos, &res); //acho que essa parte é a mais preocupante, tem que ver esse res
+		analisa(img,i,j,n,m,pilha); // só declarar como int o m e o n como numero de linhas e colunas (vc pode ver se tem já alguma variável que funcione como m e n)
+	}
+	cont ++;
+	
+	printf("Quantidade de imagens = %d", cont);
+	
 	fclose(fp); // fecha o arquivo
+	
+	
 
 void push(int x, int y, struct Pilha *pilha, int *resultado) {
 	struct Pos *p = (struct Pos *)malloc(sizeof(struct Pos));
@@ -114,6 +170,8 @@ void push(int x, int y, struct Pilha *pilha, int *resultado) {
 		*resultado = OK;
 	}
 }
+
+
 void pop(struct Pilha *pilha, struct Pos *p, int *resultado) {
 	struct Pos *aux;
 	if (pilha->top == NULL) {
