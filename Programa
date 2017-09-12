@@ -5,6 +5,7 @@
 #include <conio.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 typedef struct Pixel {
 	unsigned char p; //0 é fundo, 1 é pixel
 	unsigned char v; //1 já foi visitado
@@ -42,7 +43,7 @@ int main()
 
 	//ARQUIVO
 	FILE *fp;
-	char arq[] = "C:\\Users\\abbin\\Documents\\engenharia\\programaçao\\reconhecer objetos\\imagens\\01.ppm";
+	char arq[] = "C:\\Temp\\objtos\\PacoteImagens1\\03.ppm";
 	fp = fopen(arq, "rb");
 	if (!fp) {
 		fprintf(stderr, "Erro - Não foi possivel abrir o arquivo '%s'.");
@@ -64,6 +65,13 @@ int main()
 	printf("Colunas: %d\n", colunas);
 	printf("Maximo: %d\n", maximo);
 
+	
+	if (strcmp(id, "6") != 0) { //strcmp faz a comparação de duas strings, a que o programa lê no arquivo e uma "P6"
+		printf("Arquivo não é PPM\n"); //irá ler os dois primeiros carcteres e verificará se é P6, se sim, é um arquivo PPM
+		fclose(fp);
+		return 0;
+	}
+
 	pilha = criaPilha(&res); // salvar o resultado da quantidades
 
 							 /*alocar a matriz img*/
@@ -80,22 +88,24 @@ int main()
 			fscanf(fp, "%c%c%c", &r, &g, &b);
 			if ((r != rf) || (g != gf) || (b != bf)) {
 				img[i][j].p = 1;
-				if (j < 200)printf(" "); // onde a cor pixel é diferente fica em branco
+				printf(" "); // onde a cor pixel é diferente fica em branco
 			}
 			else {
-				if (j < 200)printf("*"); // onde a cor pixel é igual fica com asterisco
+				printf("*"); // onde a cor pixel é igual fica com asterisco
 			}
 		} printf("\n");
 	}
-	
+
 	for (i = 0; i < linhas; i++) {
 		for (j = 0; j < colunas; j++) {
 			if ((img[i][j].p == 1) && (img[i][j].v == 0)) {
 				verificaAdjacentes(img, i, j, linhas, colunas, pilha);
-				while (pilha->quant > 0) {
-					pop(pilha, pilha->top, &res);
-					verificaAdjacentes(img, pos->x, pos->y, linhas, colunas, pilha);
-				}
+				do {
+					if (pilha->quant > 0) {
+						pop(pilha, pos, &res);
+						verificaAdjacentes(img, pos->x, pos->y, linhas, colunas, pilha);
+					}
+				} while (pilha->quant > 0);
 				cont++;
 			}
 		}
@@ -135,33 +145,34 @@ void pop(struct Pilha *pilha, struct Pos *p, int *res) {
 		p->x = aux->x;
 		p->y = aux->y;
 		pilha->top = aux->ant;
-		pilha->quant++;
+		pilha->quant--;
 		free(aux);
 	}
 }
 void verificaAdjacentes(struct Pixel **img, int i, int j, int linhas, int colunas, struct Pilha *pilha) {
 	int res;
 	img[i][j].v = 1;
+	push(i, j, pilha, &res);
 
 	if (j > 0)
 		if ((img[i][j - 1].p == 1) && (img[i][j - 1].v == 0)) {
 			push(i, j - 1, pilha, &res);
-			img[i][j - 1].v == 1;
+			img[i][j - 1].v = 1;
 		}
 	if (i > 0)
 		if ((img[i - 1][j].p == 1) && (img[i - 1][j].v == 0)) {
 			push(i - 1, j, pilha, &res);
-			img[i - 1][j].v == 1;
+			img[i - 1][j].v = 1;
 		}
 	if (i < linhas - 1)
 		if ((img[i + 1][j].p == 1) && (img[i + 1][j].v == 0)) {
 			push(i + 1, j, pilha, &res);
-			img[i + 1][j].v == 1;
+			img[i + 1][j].v = 1;
 		}
 	if (j < colunas - 1)
 		if ((img[i][j + 1].p == 1) && (img[i][j + 1].v == 0)) {
 			push(i, j + 1, pilha, &res);
-			img[i][j + 1].v == 1;
+			img[i][j + 1].v = 1;
 		}
 }
 
