@@ -1,202 +1,344 @@
-#define ERRO 0
-#define OVERFLOW 	1
-#define UNDERFLOW 	2
-#define OK			3
+#define ERRO 		0
+#define OK 		 	1
+#define IGUAL 		10
+#define DIF		 	11
 
+#include <stdio.h>
 #include <conio.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-typedef struct Pixel {
-	unsigned char p; //0 é fundo, 1 é pixel
-	unsigned char v; //1 já foi visitado
-}tPixel;
-typedef struct Pos {
-	int x;
-	int y;
-	struct Pos *ant;
-}tPos;
-typedef struct Pilha { //salva os pixels na pilha e a posição do topo
-	int quant; // quantas posições existem na pilha
-	struct Pos *top;
-}tPilha;
 
-struct Pilha *criaPilha(int *resultado);
-void push(int x, int y, struct Pilha *pilha, int *resultado);
-void pop(struct Pilha *pilha, struct Pos *p, int *resultado);
-void verificaAdjacentes(struct Pixel **img, int i, int j, int linhas, int colunas, struct Pilha *pilha);
+// estrutura de um elemento, no da arvore
+struct sNo {
+	int valor ,freq;
+	char carcter;
+	struct sNo *esq;
+	struct sNo *dir;
+};
 
-int main()
-{
-	char id[3];
-	int linhas, colunas, maximo;
-	unsigned char rf, gf, bf, r, g, b;
-	int posicao;
-	int resul = 3;
-	int cont = 0;
-	int c;
+typedef struct sNo sNo;
 
+sNo *inicializa();
+sNo *cria(int valor, int freq, char caracter, sNo *sae, sNo *sad, int *res);
 
+int comparaCharExiste(char ch, struct sNo *vector);
+int e_vazia(sNo *a);
+int busca(int valor, sNo *a);
 
-	Pilha *pilha = criaPilha(&resul);
-	tPixel **img;
-	Pos pos;
+void imprime_pre_order(sNo *a);
+void imprime_in_order(sNo *a);
+void imprime_pos_order(sNo *a);
+void imprime_textual(sNo *a);
 
+int altura(sNo *a);
+int qtdeNos(sNo *a);
+int qtdeFolhas(sNo *a);
 
-	int i, j;
+int main() {
+	int r, v, cont = 0, i = 0;
+	sNo *a0, *a1, *a2, *a3, *a4, *a5;
+	FILE *file;
+	char c, auxc;
+	struct sNo *p, *aux, vector[100], *vectorp;
+	vectorp = vector;
 
-	//ARQUIVO
-	FILE *fp;
-	char arq[] = "C:\\Temp\\Giovanna\\10.ppm";
-	fp = fopen(arq, "rb");
-	if (!fp) {
-		fprintf(stderr, "Erro - Não foi possivel abrir o arquivo '%s'.");
-		exit(ERRO);
-	}
-
-	c = getc(fp);
-	while (c == '$')
-	{
-		while ((c = getc(fp)) != '\n');
-	}
-	fscanf(fp, "%s", &id);
-	fscanf(fp, "%d", &colunas);
-	fscanf(fp, "%d", &linhas);
-	fscanf(fp, "%d", &maximo);
-	fscanf(fp, "%c", &rf);
-	printf("Id: %s\n", id);
-	printf("Linhas: %d\n", linhas);
-	printf("Colunas: %d\n", colunas);
-	printf("Maximo: %d\n", maximo);
+	a3 = cria(3, 2, 'a', inicializa(), inicializa(), &r);
+	a4 = cria(4, 2, 'c', inicializa(), inicializa(), &r);
+	a5 = cria(5, 5, 'h', inicializa(), inicializa(), &r);
+	a1 = cria(1, NULL, NULL, inicializa(), a3, &r);
+	a2 = cria(2, NULL, NULL, a4, a5, &r);
+	a0 = cria(0, NULL, NULL, a1, a2, &r);
 
 
-	if (strcmp(id, "6") != 0) { //strcmp faz a comparação de duas strings, a que o programa lê no arquivo e uma "P6"
-		printf("Arquivo não é PPM\n"); //irá ler os dois primeiros carcteres e verificará se é P6, se sim, é um arquivo PPM
-		fclose(fp);
+	printf(":: Arvore a0 criada!");
+	printf("\n:: Pre-order: ");
+	imprime_pre_order(a0);
+
+	printf("\n");
+
+	file = fopen("C:\\Users\\abbin\\Documents\\engenharia\\programaçao\\compactação\\test.txt", "r");
+	if (file == NULL) {
+		printf("Erro - nao foi possivel ler arquivo\n");
 		return 0;
 	}
 
-	pilha = criaPilha(&resul); // salvar o resultado da quantidades
+	
 
-							   /*alocar a matriz img*/
-	img = (tPixel **)calloc(linhas, sizeof(tPixel *));
-	for (i = 0; i < linhas; i++) {
-		img[i] = (tPixel *)calloc(colunas, sizeof(tPixel));
-	}
-	/*ler o lo. pixel para o fundo*/
-	posicao = ftell(fp);				//ftell para encontrar a posição
-	fscanf(fp, "%c%c%c", &rf, &gf, &bf); //fscanf ler o fundo
-	fseek(fp, posicao, SEEK_SET);		//fseek para reposicionar
-	for (i = 0; i < linhas; i++) {
-		for (j = 0; j < colunas; j++) {
-			fscanf(fp, "%c%c%c", &r, &g, &b);
-			if ((r != rf) || (g != gf) || (b != bf)) {
-				img[i][j].p = 1;
-				printf(" "); // onde a cor pixel é diferente fica em branco
-			}
-			else {
-				printf("*"); // onde a cor pixel é igual fica com asterisco
-			}
-		} printf("\n");
-	}
-
-	fclose(fp); // fecha o arquivo
-
-	for (i = 0; i < linhas; i++) {
-		for (j = 0; j < colunas; j++) {
-			if ((img[i][j].p == 1) && (img[i][j].v == 0)) {
-				verificaAdjacentes(img, i, j, linhas, colunas, pilha);
-				 
-				while (pilha->quant > 0) {
-					pop(pilha, &pos, &resul);
-					verificaAdjacentes(img, pos.x, pos.y, linhas, colunas, pilha);		
+	rewind(file);
+	do {
+		for (i = 0; c != EOF; i++) {
+			c = fgetc(file);
+			printf("%c", c);
+			if (comparaCharExiste(c, vectorp) == DIF) {
+				if (i < 1) {
+					auxc = c;
+					p = (struct sNo*)malloc(sizeof(struct sNo));
+					if (p == NULL) {
+						printf("erro no alocamento");
+						return 0;
 					}
-				cont++;
+					vector[i] = *p;
+					p->carcter = auxc;
+					p->esq = NULL;
+					p->dir = NULL;
+				}
+				if (auxc == c) {
+					cont++;
+					p->freq = cont;
+				}
+				i++;
 			}
 		}
-	}
-	printf("\n ");
+	}while()
+	printf("\n");
+	rewind(file);
+	fclose(file);
+
+
+
+
 	
-	printf("\n @@@@@@@@@ A imagem possui %d objetos @@@@@@@@@ \n", cont);
 
 
-}
 
-	struct Pilha *criaPilha(int *resultado) {
-		Pilha *pilha = (tPilha*)malloc(sizeof(*pilha));
-		if (*resultado == OK) {
-			pilha->quant = 0;
 
-			pilha->top = NULL;
-			return pilha;
-		}
-		else {
-			printf("erro na criaçao da pilha\n");
-			system("pause");
 
-		}
 
-	}
 
-void push(int x, int y, struct Pilha *pilha, int *resultado) {
-	struct Pos *p = (struct Pos *)malloc(sizeof(struct Pos));
-	if (p == NULL) *resultado = ERRO;
-	else {
-		p->x = x;
-		p->y = y;
-		if (pilha->top == NULL) {
-			p->ant = NULL;
-			pilha->top = p;
-		}
-		else {
-			p->ant = pilha->top;
-			pilha->top = p;
-		}
-		pilha->quant++;
-		*resultado = OK;
-	}
-}
-void pop(struct Pilha *pilha, struct Pos *p, int *resultado) {
-	struct Pos *aux;
-	if (pilha->top == NULL) {
-		*resultado = UNDERFLOW;
-	}
-	else {
-		aux = pilha->top;
-		p->x = aux->x;
-		p->y = aux->y;
-		pilha->top = aux->ant;
-		pilha->quant--;
-		free(aux);
-	}
-}
-void verificaAdjacentes(struct Pixel **img, int i, int j, int linhas, int colunas, struct Pilha *pilha) {
-	int resul;
+
+
+
+
+
+
 	
-	img[i][j].v = 1;
+	
+	/*
+	sNo *a0, *a1, *a2, *a3, *a4, *a5; // exemplo 1
+	sNo *a10; // exemplo 2
+	sNo *a20; // exemplo 3: arvore com um unico no raiz
+	sNo *a30; // exemplo 4: para exemplo de arvore vazia
+	int r, v;
 
-	if (j > 0)
-		if ((img[i][j - 1].p == 1) && (img[i][j - 1].v == 0)) {
-			push(i, j - 1, pilha, &resul);
-			img[i][j - 1].v = 1;
-		}
+	/*  Exemplo 1 ------------------------------------------------------------------------
+	Criando a seguinte arvore:
+	  0
+	/   \
+	1    2
+	\   / \
+	 3 4   5
+	
+	a3 = cria(3, inicializa(), inicializa(), &r);
+	a4 = cria(4, inicializa(), inicializa(), &r);
+	a5 = cria(5, inicializa(), inicializa(), &r);
+	a1 = cria(1, inicializa(), a3, &r);
+	a2 = cria(2, a4, a5, &r);
+	a0 = cria(0, a1, a2, &r);
+	if (r) {
+		printf(":: Arvore a0 criada!");
+		printf("\n:: Pre-order: ");
+		imprime_pre_order(a0);
+		printf("\n:: In-order: ");
+		imprime_in_order(a0);
+		printf("\n:: Pos-order: ");
+		imprime_pos_order(a0);
+		printf("\n:: Textual: ");
+		imprime_textual(a0);
+		printf("\n:: a0 possui %d nos", qtdeNos(a0));
+		printf("\n:: a0 possui %d folhas", qtdeFolhas(a0));
+		printf("\n:: a0 possui altura de %d \n", altura(a0));
 
-	if (i > 0)
-		if ((img[i - 1][j].p == 1) && (img[i - 1][j].v == 0)) {
-			push(i - 1, j, pilha, &resul);
-			img[i - 1][j].v = 1;
-		}
+		getch();
+	}
+	else printf("=> Erro na criacao da arvore!\n");
 
-	if (i < linhas - 1)
-		if ((img[i + 1][j].p == 1) && (img[i + 1][j].v == 0)) {
-			push(i + 1, j, pilha, &resul);
-			img[i + 1][j].v = 1;
-		}
 
-	if (j < colunas - 1)
-		if ((img[i][j + 1].p == 1) && (img[i][j + 1].v == 0)) {
-			push(i, j + 1, pilha, &resul);
-			img[i][j + 1].v = 1;
-		}
+	/* Exemplo 2 -----------------------------------------------------------------------------
+	Outro exemplo de arvore e formato para criacao:
+	  21
+	/   \
+	20   21
+	
+	a10 = cria(10,cria(20, NULL, NULL, &r),cria(21, NULL, NULL, &r),&r);
+	if (r) {
+		printf("\n\n:: Arvore a10 criada!");
+		printf("\n:: Pre-order: ");
+		imprime_pre_order(a10);
+		printf("\n:: Textual: ");
+		imprime_textual(a10);
+		printf("\n:: a10 possui %d nos", qtdeNos(a10));
+		printf("\n:: a10 possui %d folhas", qtdeFolhas(a10));
+		printf("\n:: a10 possui altura de %d \n", altura(a10));
+	}
+	else printf("=> Erro na criacao da arvore!\n");
 
+
+	// Exemplo do usa da funcao de busca -----------------------------------------------------
+	if (busca(4, a0)) printf("\n\nValor 4 esta presente na arvore a0\n");
+	if (!busca(4, a10)) printf("Valor 4 nao esta presente na arvore a10\n");
+	getch();
+
+	// Exemplo 3 -----------------------------------------------------------------------------
+	// arvore com um unico no raiz
+	a20 = cria(20, inicializa(), inicializa(), &r);
+	if (r) {
+		printf("\n\n:: Arvore a20 criada!");
+		printf("\n:: Pre-order: ");
+		imprime_pre_order(a20);
+		printf("\n:: Textual: ");
+		imprime_textual(a20);
+		printf("\n:: a0 possui %d nos", qtdeNos(a20));
+		printf("\n:: a0 possui %d folhas", qtdeFolhas(a20));
+		printf("\n:: a0 possui altura de %d \n", altura(a20));
+	}
+	else printf("=> Erro na criacao da arvore!\n");
+
+
+	// Exemplo 4 ---------------------------------------------------------------------------
+	// Arvore vazia
+	a30 = inicializa();
+	if (r) {
+		printf("\n\n:: Arvore a30 criada!");
+		printf("\n:: Pre-order: ");
+		imprime_pre_order(a30);
+		printf("\n:: Textual: ");
+		imprime_textual(a30);
+		printf("\n:: a0 possui %d nos", qtdeNos(a30));
+		printf("\n:: a0 possui %d folhas", qtdeFolhas(a30));
+		printf("\n:: a0 possui altura de %d \n", altura(a30));
+	}
+	else printf("=> Erro na criacao da arvore!\n"); 
+	return 0;
+	*/
 }
+
+// definicao recursiva de arvore binaria:
+// 1) uma arvore binaria eh vazia, ou
+sNo *inicializa(void) {
+	return NULL;
+}
+// 2) eh composta por uma raiz e duas subarvores (esquerda e direita)
+sNo *cria(int valor, int freq, char caracter, sNo *sae, sNo *sad, int *res) {
+	sNo *no;
+	no = (sNo *)malloc(sizeof(sNo));
+	if (no == NULL) *res = ERRO;
+	else {
+		no->esq = sae;
+		no->dir = sad;
+		no->valor = valor;
+		no->carcter = caracter;
+		no->freq = freq;
+		*res = OK;
+	}
+	return no;
+}
+
+// verifica se arvore a eh vazia
+int e_vazia(sNo *a) {
+	return a == NULL;
+}
+
+// indica ocorrencia ou nao do valor na arvore
+int busca(int valor, sNo *a) {
+	if (e_vazia(a))
+		return 0;
+	else // encontra ou busca a esquerda ou busca a direita, interrompe assim que achar
+		return a->valor == valor || busca(valor, a->esq) || busca(valor, a->dir);
+}
+
+// impressao dos nos da arvore:
+//    -> pre-order/pré-ordem: trata raiz, percorre sae, percorre sad
+//    -> in-order/ordem simétrica: percorre sae, trata raiz, percorre sad
+//    -> pos-order/pós-ordem: percorre sae, percorre sad, trata raiz
+void imprime_pre_order(sNo *a) {
+	if (!e_vazia(a)) {
+		printf("%d", a->valor);
+		if (a->carcter != NULL) {
+			printf("%c", a->carcter);
+		}
+		else
+			printf(" ");
+		imprime_pre_order(a->esq);
+		printf(" ");
+		imprime_pre_order(a->dir);
+		printf(" ");
+	}
+}
+
+void imprime_in_order(sNo *a) {
+	if (!e_vazia(a)) {
+		imprime_in_order(a->esq);
+		printf(" %d ", a->valor);
+		imprime_in_order(a->dir);
+	}
+}
+
+void imprime_pos_order(sNo *a) {
+	if (!e_vazia(a)) {
+		imprime_pos_order(a->esq);
+		imprime_pos_order(a->dir);
+		printf(" %d ", a->valor);
+	}
+}
+
+// representacao textual, percurso eh pre-order
+void imprime_textual(sNo *a) {
+	if (e_vazia(a))
+		printf("<>");
+	else {
+		printf("<%d", a->valor);
+		imprime_textual(a->esq);
+		imprime_textual(a->dir);
+		printf(">");
+	}
+}
+
+// retorna a altura da arvore
+int altura(sNo *a) {
+	int ae, ad;
+
+	if (a == NULL)
+		return -1; // arvore vazia tem altura -1 
+	else if (a->esq == NULL && a->dir == NULL)
+		return 0; // arvore com apenas raiz tem altura 0
+	else {
+		ae = altura(a->esq);
+		ad = altura(a->dir);
+		if (ae > ad)
+			return 1 + ae;
+		else
+			return 1 + ad;
+	}
+}
+
+// retorna a quantidade de nos da arvore
+int qtdeNos(sNo *a) {
+	if (a == NULL)
+		return 0;
+	else
+		return 1 + qtdeNos(a->esq) + qtdeNos(a->dir);
+}
+
+// retorna a quantidade de folhas (nos sem filhos) da arvore
+int qtdeFolhas(sNo *a) {
+	if (a == NULL)
+		return 0;
+	if (a->esq == NULL && a->dir == NULL)
+		return 1;
+	return qtdeFolhas(a->esq) + qtdeFolhas(a->dir);
+}
+
+int comparaCharExiste(char ch, struct sNo *vector) {
+	for (int i = 0; i < 100; i++) {
+		if (ch == (vector + i)->carcter) {
+			return IGUAL;
+		}
+		else
+		{
+			return DIF;
+		}
+
+	}
+}
+
+
